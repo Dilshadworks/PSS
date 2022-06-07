@@ -1,0 +1,48 @@
+version: '3'
+services:
+  website:
+    build:
+      context: ./docker/web
+    # command: bash -c 'composer update && php artisan optimize && php artisan migrate'
+    volumes:
+      - ./:/var/www/html/
+    ports:
+      #Standard HTTP Port
+      - "80:80"
+      #Below allows access to local computer from outside ports
+      - "8080:80"
+      #SSH Port
+      - "443:443"
+      #Below allows access to local computer from outside ports
+      - "4443:443"
+    depends_on:
+      - db-website
+    links:
+      - db-website
+  db-website:
+    image: mysql:5.7
+    volumes:
+      - ./docker/database:/var/lib/mysql
+    restart: always
+    ports:
+      - "3306:3306"
+    environment:
+      MYSQL_ROOT_USER: root
+      MYSQL_ROOT_PASSWORD: nvL4STmUZV7P2bYX
+      MYSQL_DATABASE: db-website
+      MYSQL_USER: root
+      MYSQL_PASSWORD: nvL4STmUZV7P2bYX
+      SERVICE_TAGS:
+      SERVICE_NAME: mysql
+  phpmyadmin:
+    image: phpmyadmin/phpmyadmin
+    container_name: pma
+    links:
+      - db-website
+    environment:
+      PMA_HOST: db-website
+      PMA_PORT: 3306
+      PMA_ARBITRARY: 1
+    restart: always
+    ports:
+      - 8001:80
